@@ -138,6 +138,12 @@ public class HiveEmbeddedServer2 {
     conf.set("hive.added.files.path", "");
     conf.set("hive.added.archives.path", "");
     conf.set("fs.default.name", "file:///");
+    conf.set("set hive.support.concurrency", "true");
+    conf.set("set hive.enforce.bucketing", "true");
+    conf.set("set hive.exec.dynamic.partition.mode", "nonstrict");
+    conf.set("set hive.txn.manager", "org.apache.hadoop.hive.ql.lockmgr.DbTxnManager");
+    conf.set("set hive.compactor.initiator.on", "true");
+    conf.set("set hive.compactor.worker.threads" ,"1");
     conf.set(HiveConf.ConfVars.SUBMITLOCALTASKVIACHILD.varname, "false");
 
     // clear mapred.job.tracker - Hadoop defaults to 'local' if not defined. Hive however expects
