@@ -50,7 +50,7 @@ CarbonData DML statements are documented here,which includes:
 | ------------------------------------------------------- | ------------------------------------------------------------ |
 | [DELIMITER](#delimiter)                                 | Character used to separate the data in the input csv file    |
 | [QUOTECHAR](#quotechar)                                 | Character used to quote the data in the input csv file       |
-| [LINE_SEPARATOR](#line_separator)                       | Characters used to specify the line separator in the input csv file. If not provide, csv parser will detect it automatically. | 
+| [LINE_SEPARATOR](#line_separator)                       | Characters used to specify the line separator in the input csv file. If not provided, csv parser will detect it automatically. | 
 | [COMMENTCHAR](#commentchar)                             | Character used to comment the rows in the input csv file. Those rows will be skipped from processing |
 | [HEADER](#header)                                       | Whether the input csv files have header row                  |
 | [FILEHEADER](#fileheader)                               | If header is not present in the input csv, what is the column names to be used for data read from input csv |
