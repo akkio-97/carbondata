@@ -18,12 +18,14 @@
 package org.apache.carbondata.core.scan.result.vector;
 
 import java.util.BitSet;
+import java.util.Deque;
 
 import org.apache.carbondata.core.keygenerator.directdictionary.DirectDictionaryGenerator;
 import org.apache.carbondata.core.metadata.datatype.DecimalConverterFactory;
 import org.apache.carbondata.core.scan.filter.GenericQueryType;
 import org.apache.carbondata.core.scan.model.ProjectionDimension;
 import org.apache.carbondata.core.scan.model.ProjectionMeasure;
+import org.apache.carbondata.core.scan.result.vector.impl.CarbonColumnVectorImpl;
 
 public class ColumnVectorInfo implements Comparable<ColumnVectorInfo> {
   public int offset;
@@ -39,6 +41,15 @@ public class ColumnVectorInfo implements Comparable<ColumnVectorInfo> {
   public int[] invertedIndex;
   public BitSet deletedRows;
   public DecimalConverterFactory.DecimalConverter decimalConverter;
+  public Deque<CarbonColumnVectorImpl> vectorStack = null;
+
+  public Deque<CarbonColumnVectorImpl> getVectorStack() {
+    return vectorStack;
+  }
+
+  public void setVectorStack(Deque<CarbonColumnVectorImpl> vectorStack) {
+    this.vectorStack = vectorStack;
+  }
 
   @Override
   public int compareTo(ColumnVectorInfo o) {

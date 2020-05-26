@@ -22,22 +22,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.carbondata.core.constants.CarbonV3DataFormatConstants;
-import org.apache.carbondata.core.metadata.datatype.DataType;
-import org.apache.carbondata.core.metadata.datatype.DataTypes;
-import org.apache.carbondata.core.metadata.datatype.DecimalType;
-import org.apache.carbondata.core.metadata.datatype.StructField;
+import org.apache.carbondata.core.metadata.datatype.*;
 import org.apache.carbondata.core.scan.result.vector.impl.CarbonColumnVectorImpl;
-import org.apache.carbondata.presto.readers.BooleanStreamReader;
-import org.apache.carbondata.presto.readers.ByteStreamReader;
-import org.apache.carbondata.presto.readers.DecimalSliceStreamReader;
-import org.apache.carbondata.presto.readers.DoubleStreamReader;
-import org.apache.carbondata.presto.readers.FloatStreamReader;
-import org.apache.carbondata.presto.readers.IntegerStreamReader;
-import org.apache.carbondata.presto.readers.LongStreamReader;
-import org.apache.carbondata.presto.readers.ObjectStreamReader;
-import org.apache.carbondata.presto.readers.ShortStreamReader;
-import org.apache.carbondata.presto.readers.SliceStreamReader;
-import org.apache.carbondata.presto.readers.TimestampStreamReader;
+import org.apache.carbondata.presto.readers.*;
 
 public class CarbonVectorBatch {
 
@@ -102,6 +89,12 @@ public class CarbonVectorBatch {
       } else {
         return null;
       }
+    } else if (DataTypes.isArrayType(field.getDataType())) {
+      if (field.getChildren().size() > 1) {
+        throw new UnsupportedOperationException("Array supports only one Child Column");
+      }
+      StructField childField = field.getChildren().get(0);
+      return new ArrayStreamReader(batchSize, childField.getDataType(), field.getChildren().get(0));
     } else {
       return new ObjectStreamReader(batchSize, field.getDataType());
     }

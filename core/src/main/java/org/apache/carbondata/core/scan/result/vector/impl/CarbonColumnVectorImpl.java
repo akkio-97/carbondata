@@ -18,8 +18,11 @@
 package org.apache.carbondata.core.scan.result.vector.impl;
 
 import java.math.BigDecimal;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.List;
 
 import org.apache.carbondata.core.metadata.datatype.DataType;
 import org.apache.carbondata.core.metadata.datatype.DataTypes;
@@ -70,9 +73,30 @@ public class CarbonColumnVectorImpl implements CarbonColumnVector {
 
   private CarbonColumnVector dictionaryVector;
 
+  private List<CarbonColumnVectorImpl> childrenVector;
+
   private LazyPageLoader lazyPage;
 
   private boolean loaded;
+
+  public boolean isComplex() {
+    return false;
+  }
+
+  private ArrayList<Integer> childrenElements = null;
+
+  private ArrayList<Integer> childrenOffset = null;
+
+  private int index = 0;
+
+  @Override
+  public int getIndex() {
+    return index;
+  }
+
+  public void setIndex(int index) {
+    this.index = index;
+  }
 
   public CarbonColumnVectorImpl(int batchSize, DataType dataType) {
     this.batchSize = batchSize;
@@ -100,6 +124,58 @@ public class CarbonColumnVectorImpl implements CarbonColumnVector {
       data = new Object[batchSize];
     }
 
+  }
+
+  @Override
+  public CarbonColumnVector getColumnVector() {
+    return null;
+  }
+
+  @Override
+  public List<CarbonColumnVectorImpl> getChildrenVector() {
+    return childrenVector;
+  }
+
+  @Override
+  public void putArrayObject() {
+    return;
+  }
+
+  public void setChildrenVector(ArrayList<CarbonColumnVectorImpl> childrenVector) {
+    this.childrenVector = childrenVector;
+  }
+
+  public ArrayList<Integer> getChildrenElements() {
+    return childrenElements;
+  }
+
+  public void setChildrenElements(ArrayList<Integer> childrenElements) {
+    this.childrenElements = childrenElements;
+  }
+
+  public ArrayList<Integer> getChildrenOffset() {
+    return childrenOffset;
+  }
+
+  public void setChildrenOffset(ArrayList<Integer> childrenOffset) {
+    this.childrenOffset = childrenOffset;
+  }
+
+  public void setChildrenElementsAndOffset(byte[] childPageData) {
+    ByteBuffer childInfoBuffer = ByteBuffer.wrap(childPageData);
+    ArrayList<Integer> childElements = new ArrayList<>();
+    ArrayList<Integer> childOffset = new ArrayList<>();
+
+    while (childInfoBuffer.remaining() >= 8) {
+      int elements = childInfoBuffer.getInt();
+      if (elements == 0) {
+        break;
+      }
+      childElements.add(elements);
+      childOffset.add(childInfoBuffer.getInt());
+    }
+    setChildrenElements(childElements);
+    setChildrenOffset(childOffset);
   }
 
   @Override
@@ -332,6 +408,10 @@ public class CarbonColumnVectorImpl implements CarbonColumnVector {
   @Override
   public DataType getType() {
     return dataType;
+  }
+
+  public String getDataTypeName() {
+    return "";
   }
 
   @Override
