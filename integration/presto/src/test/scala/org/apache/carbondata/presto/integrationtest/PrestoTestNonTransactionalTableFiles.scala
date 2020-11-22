@@ -20,10 +20,12 @@ package org.apache.carbondata.presto.integrationtest
 import java.io.{BufferedInputStream, File, FileInputStream}
 import java.sql.SQLException
 import java.util
+import java.util.logging.{Level, Logger}
 
 import org.apache.commons.codec.binary.Hex
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang.RandomStringUtils
+import org.apache.spark.sql.test.util.QueryTest
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, FunSuiteLike}
 
 import org.apache.carbondata.common.logging.LogServiceFactory
@@ -36,7 +38,7 @@ import org.apache.carbondata.presto.server.{PrestoServer, PrestoTestUtil}
 import org.apache.carbondata.sdk.file.{CarbonWriter, Schema}
 
 class PrestoTestNonTransactionalTableFiles
-  extends FunSuiteLike with BeforeAndAfterAll with BeforeAndAfterEach {
+  extends QueryTest with FunSuiteLike with BeforeAndAfterAll with BeforeAndAfterEach {
 
   private val logger = LogServiceFactory
     .getLogService(classOf[PrestoTestNonTransactionalTableFiles].getCanonicalName)
@@ -58,6 +60,16 @@ class PrestoTestNonTransactionalTableFiles
     prestoServer.startServer("sdk_output", map)
     prestoServer.execute("drop schema if exists sdk_output")
     prestoServer.execute("create schema sdk_output")
+
+    import org.slf4j.bridge.SLF4JBridgeHandler
+    SLF4JBridgeHandler.removeHandlersForRootLogger() // (since SLF4J 1.6.5) // add
+    // SLF4JBridgeHandler to j.u.l's root logger, should be done once during // the
+    // initialization phase of your application
+    SLF4JBridgeHandler.install();
+    Logger.getLogger("").setLevel(Level.FINEST)
+
+
+
   }
 
   override def afterAll(): Unit = {
@@ -248,6 +260,15 @@ class PrestoTestNonTransactionalTableFiles
         deleteFile(eachDir.getPath, extension)
       }
     }
+  }
+
+  test("try") {
+    sql(
+      "create table carbon_table(empno int, empname String, designation String, doj Timestamp," +
+      "workgroupcategory int, workgroupcategoryname String, deptno int, deptname String," +
+      "projectcode int, projectjoindate Timestamp, projectenddate Timestamp,attendance int," +
+      "utilization int,salary int) stored as carbondata")
+
   }
 
   test("test show schemas") {
