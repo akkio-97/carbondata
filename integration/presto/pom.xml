@@ -34,6 +34,16 @@
     <httpcore.version>4.4.9</httpcore.version>
     <dev.path>${basedir}/../../dev</dev.path>
     <jacoco.append>true</jacoco.append>
+
+    <build.directory.projectPresto>../../integration/presto/target</build.directory.projectPresto>
+
+    <classes.directory.projectPresto>../../integration/presto/target/classes</classes.directory.projectPresto>
+
+    <sources.directory.projectPresto>../../integration/presto/src/main/scala</sources.directory.projectPresto>
+    <sources.directory.projectPresto>../../integration/presto/src/main/java</sources.directory.projectPresto>
+
+    <generated-sources.directory.projectPresto>../../integration/presto/target/generated-sources/annotations</generated-sources.directory.projectPresto>
+
   </properties>
 
   <dependencies>
@@ -591,6 +601,60 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>compile</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.apache.carbondata</groupId>
+                  <artifactId>carbondata-format</artifactId>
+                  <version>${project.version}</version>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>com.google.code.gson</groupId>
+                  <artifactId>gson</artifactId>
+                  <version>2.4</version>
+                </artifactItem>
+                <artifactItem>
+                  <groupId>org.xerial.snappy</groupId>
+                  <artifactId>snappy-java</artifactId>
+                  <version>${snappy.version}</version>
+                </artifactItem>
+              </artifactItems>
+              <outputDirectory>${project.build.directory}/jars</outputDirectory>
+              <!-- other configurations here -->
+            </configuration>
+          </execution>
+          <execution>
+            <id>jacoco-dependency-ant</id>
+            <goals>
+              <goal>copy</goal>
+            </goals>
+            <phase>process-test-resources</phase>
+            <inherited>false</inherited>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.jacoco</groupId>
+                  <artifactId>org.jacoco.ant</artifactId>
+                  <version>0.7.9</version>
+                </artifactItem>
+              </artifactItems>
+              <stripVersion>true</stripVersion>
+              <outputDirectory>${basedir}/target/jacoco-jars</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.18</version>
         <!-- Note config is repeated in scalatest config -->
@@ -604,6 +668,68 @@
           <testFailureIgnore>false</testFailureIgnore>
           <failIfNoTests>false</failIfNoTests>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <version>1.6</version>
+        <executions>
+          <execution>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <echo message="Generating JaCoCo Reports" />
+                <taskdef name="report" classname="org.jacoco.ant.ReportTask">
+                  <classpath path="${basedir}/target/jacoco-jars/org.jacoco.ant.jar" />
+                </taskdef>
+                <mkdir dir="${basedir}/target/coverage-report" />
+                <report>
+                  <executiondata>
+                    <fileset dir="${build.directory.projectPresto}" erroronmissingdir="false">
+                      <include name="jacoco.exec" />
+                    </fileset>
+
+                  </executiondata>
+                  <structure name="jacoco-CarbonData Coverage Project">
+                    <group name="carbondata-coverage">
+                      <classfiles>
+                        <fileset dir="${classes.directory.projectPresto}" erroronmissingdir="false" />
+                      </classfiles>
+                      <sourcefiles encoding="UTF-8">
+                        <fileset dir="${sources.directory.projectPresto}" erroronmissingdir="false" />
+                      </sourcefiles>
+                    </group>
+                  </structure>
+                  <html destdir="../../target/carbondata-coverage-report/html" />
+                  <xml destfile="../../target/carbondata-coverage-report/carbondata-coverage-report.xml" />
+                  <csv destfile="../../target/carbondata-coverage-report/carbondata-coverage-report.csv" />
+                </report>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>org.jacoco.ant</artifactId>
+            <version>0.7.9</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.1.2</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>${presto.mvn.plugin.groupid}</groupId>
